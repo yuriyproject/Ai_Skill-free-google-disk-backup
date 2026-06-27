@@ -1,0 +1,15 @@
+[Unit]
+Description=Example Project weekly backup retention and integrity check
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+EnvironmentFile=/etc/example-project-backup/backup.env
+ExecStart=/opt/example-project/ops/backup/maintenance.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+

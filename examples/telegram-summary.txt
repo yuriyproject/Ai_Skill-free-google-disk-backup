@@ -1,0 +1,17 @@
+Example Telegram daily summary:
+
+Free Google Disk Backup daily summary
+Latest: 8b9ad2778d903ba276cfd73788963d841a430fe68e884c2b583ae49eed7492fa (OK)
+Timestamp: 2026-06-18T08:03:06Z
+Duration: 41s
+Repository: ok
+Maintenance: missing
+Restore test: ok
+Google Drive used/free: 5063760/5496985770348
+
+Notes:
+
+- `Maintenance: missing` can be normal before the first weekly maintenance run.
+- `Restore test: ok` is more important than upload success alone.
+- Google Drive values are bytes.
+

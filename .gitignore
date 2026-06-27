@@ -1,0 +1,26 @@
+# Secrets and local state
+.env
+*.env
+!.env.example
+rclone.conf
+restic-password
+*.key
+*.pem
+id_ed25519*
+
+# Runtime output
+tmp/
+staging/
+restore/
+*.dump
+*.sql
+*.tar
+*.tar.gz
+*.zip
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

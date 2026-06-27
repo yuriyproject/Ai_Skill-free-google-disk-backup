@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Example Project backup hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=10m
+Unit=project-backup.service
+
+[Install]
+WantedBy=timers.target
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Example Project backup maintenance weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 03:30:00
+Persistent=true
+RandomizedDelaySec=10m
+Unit=project-backup-maintenance.service
+
+[Install]
+WantedBy=timers.target

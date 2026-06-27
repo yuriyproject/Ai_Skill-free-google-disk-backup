@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Example Project stage restore-lab test twice a month
+
+[Timer]
+OnCalendar=*-*-01,15 05:30:00
+Persistent=true
+RandomizedDelaySec=30m
+Unit=project-stage-restore-test.service
+
+[Install]
+WantedBy=timers.target
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Free Google Disk Backup"
+  short_description: "Free Google Drive backups with Restic"
+  default_prompt: "Use $free-google-disk-backup to design and implement a free Google Drive backup system for this project."

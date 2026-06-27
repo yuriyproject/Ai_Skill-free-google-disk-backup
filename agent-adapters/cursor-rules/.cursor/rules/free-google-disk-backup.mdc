@@ -1,0 +1,109 @@
+---
+description: Free Google Drive backup safety kit with Restic, rclone, Telegram, restore tests, and Stage Restore Server workflows.
+globs:
+alwaysApply: false
+---
+
+# Free Google Disk Backup
+
+Use this rule when designing, implementing, reviewing, or verifying regular
+production backups that store encrypted Restic repositories on the user's
+existing Google Drive through rclone.
+
+## Non-Negotiables
+
+- Never print secrets: `.env`, Restic password, OAuth client secret,
+  `rclone.conf`, Telegram tokens, SSH keys, or database dumps.
+- Do not delete project data, Docker volumes, databases, Google Drive backups,
+  or old repositories unless the user explicitly approves the destructive
+  action.
+- Do not call backup complete until restore is tested.
+- Use the user's existing Google Drive storage. Do not switch to paid S3,
+  Google Cloud Storage, Hetzner Backup, or backup SaaS unless the user asks.
+- Prefer Google Drive OAuth scope `https://www.googleapis.com/auth/drive.file`.
+
+## Target Architecture
+
+- Restic encrypts, deduplicates, and compresses locally.
+- rclone remote `gdrive` writes to Google Drive.
+- Repository: `rclone:gdrive:<ProjectName>-Backups/restic`.
+- Scripts live in `ops/backup/`.
+- Root-only config lives in `/etc/<project>-backup/`.
+- State lives in `/var/lib/<project>-backup/`.
+- Restore staging lives in `/var/lib/<project>-restore/`.
+- Telegram backup bot is separate from the production app bot.
+
+Recommended retention:
+
+- hourly: 48 hours;
+- daily: 30 days;
+- weekly: 12 weeks;
+- monthly: 12 months.
+
+## What To Back Up
+
+Include:
+
+- logical database dump;
+- production `.env` or equivalent secrets file;
+- durable uploads, OCR/images, documents, media;
+- deploy files such as `docker-compose.yml`, Caddyfile, nginx config;
+- Git bundle or exact source commit metadata;
+- `manifest.json`;
+- `checksums.sha256`.
+
+Exclude by default:
+
+- Docker images;
+- dependency folders;
+- caches and Redis queues unless they contain durable business data;
+- generated builds;
+- temporary files and logs.
+
+## Implementation Pattern
+
+Create or adapt these files:
+
+- `ops/backup/lib/common.sh`: config, logging, locking, redaction, Telegram.
+- `ops/backup/backup.sh`: dump DB, collect files, manifest, checksums, restic
+  snapshot, notify.
+- `ops/backup/restore.sh`: `list`, `stage`, `test`, guarded `production`.
+- `ops/backup/maintenance.sh`: `restic forget --prune` and repository check.
+- `ops/backup/daily-summary.sh`: Telegram daily summary.
+- systemd service/timer units for backup, summary, maintenance, full check, and
+  restore test.
+
+## Verification
+
+Require real evidence:
+
+- `rclone lsd gdrive:` works;
+- Restic repository is initialized;
+- manual backup succeeds;
+- latest snapshot is visible;
+- `restore.sh stage latest` works;
+- `restore.sh test latest` succeeds;
+- Telegram success/failure messages arrive;
+- sensitive files are root-owned and mode `600`;
+- config directories are mode `700`;
+- systemd timers show sensible `NEXT` times;
+- handoff explains restore steps and where the Restic password file lives.
+
+## Stage Restore Server
+
+Prefer off-production restore proof for serious projects:
+
+1. use a separate VPS or restore-lab;
+2. install Restic, rclone, jq, git, Docker;
+3. copy only required backup config: `restic-password`, `rclone.conf`,
+   `backup.env`;
+4. run `restic snapshots`;
+5. restore a snapshot into a stage folder;
+6. verify manifest and checksums;
+7. restore the database dump into an isolated container;
+8. optionally boot the app with a stage-safe `.env`;
+9. disable production bots, webhooks, payments, email/SMS, and external writes;
+10. write the result to handoff documentation.
+
+Production restore must use an explicit snapshot ID and explicit user approval.
+Do not production-restore `latest` casually.
